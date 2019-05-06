@@ -32,7 +32,7 @@
         <div class="row">
             <div class="col-sm-6">
                 <h3>Search your photos</h3>
-                <form method="GET" onsubmit="searchPhotos()" action="#">
+                <form method="GET" onsubmit="return searchPhotos();">
                     <div class="form-group">
                         <input type="text" class="form-control" id="searchQuery" placeholder="Type your query">
                     </div>
@@ -106,6 +106,9 @@
             }).catch( function(err) {
                 console.log(err);
             });
+
+            // Stay on same page after form submission
+            return false;
         }
     </script>
 </body>
