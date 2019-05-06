@@ -12,7 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
- 
+
 var apiGateway = apiGateway || {};
 apiGateway.core = apiGateway.core || {};
 
@@ -59,7 +59,8 @@ apiGateway.core.simpleHttpClientFactory.newClient = function (config) {
             headers['Accept'] = config.defaultAcceptType;
         }
 
-        var body = apiGateway.core.utils.copy(request.body);
+        // var body = apiGateway.core.utils.copy(request.body);
+        var body = request.body // pass the image as byte array AS-IS
         if (body === undefined) {
             body = '';
         }

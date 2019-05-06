@@ -81,3 +81,21 @@ def lambda_handler(event, context):
         },
         'body': json.dumps({'results': all_photos})
     }
+
+'''
+query = 'https://vpc-nyu-hw3-qjxhglnxwxfchoep2ylzrohydq.us-east-1.es.amazonaws.com/photos/_search?pretty=true&q=*:*'
+r = requests.get(query)
+data = json.loads(r.content.decode('utf-8'))
+ids = []
+hits = try_ex(lambda: data['hits']['hits'])
+for o in hits:
+    ids.append(o['_id'])
+
+# dquery = 'https://vpc-nyu-hw3-qjxhglnxwxfchoep2ylzrohydq.us-east-1.es.amazonaws.com/photos/photo/'
+# for i in ids:
+#     requests.delete(dquery + i)
+
+query = 'https://vpc-nyu-hw3-qjxhglnxwxfchoep2ylzrohydq.us-east-1.es.amazonaws.com/photos/_search?pretty=true&q=*:*'
+r = requests.get(query)
+data = json.loads(r.content.decode('utf-8'))
+'''

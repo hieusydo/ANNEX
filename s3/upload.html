@@ -63,58 +63,34 @@
     <script type="text/javascript" src="lib/apiGatewayCore/utils.js"></script>
     <script type="text/javascript" src="apigClient.js"></script>
 
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.450.0.min.js"></script>
+
     <script>
-        function b64toBlob(b64Data, contentType, sliceSize) {
-                contentType = contentType || '';
-                sliceSize = sliceSize || 512;
-
-                var byteCharacters = atob(b64Data);
-                var byteArrays = [];
-
-                for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-                    var slice = byteCharacters.slice(offset, offset + sliceSize);
-
-                    var byteNumbers = new Array(slice.length);
-                    for (var i = 0; i < slice.length; i++) {
-                        byteNumbers[i] = slice.charCodeAt(i);
-                    }
-
-                    var byteArray = new Uint8Array(byteNumbers);
-
-                    byteArrays.push(byteArray);
-                }
-
-            var blob = new Blob(byteArrays, {type: contentType});
-            return blob;
-        }
-
         function upload() {
-            // Read the image to a binary blob
-            var file    = document.querySelector('input[type=file]').files[0];
+            var file = document.querySelector('input[type=file]').files[0];
             console.log(file);
+
+            var objectKey = file.name;
+            var fileType = file.type;
+            var bucket = "nyu-cloud-proj3";
 
             var reader  = new FileReader();
             reader.addEventListener("load", function () {
-                var ImageURL = reader.result;
-                // Split the base64 string in data and contentType
-                var block = ImageURL.split(";");
-                // Get the content type of the image
-                var contentType = block[0].split(":")[1];// In this case "image/gif"
-                // get the real base64 content of the file
-                var realData = block[1].split(",")[1];
-                console.log(realData);
-                // binBlob = b64toBlob(realData, contentType);
+                var base64str = reader.result;
 
-                binBlob = reader.result;
+                // Remove prepending data/base...
+                base64trimmed = base64str.split(",")[1];
+
+                // Decode base64 to byte array and send the body AS-IS
+                var body = AWS.util.base64.decode(base64trimmed);
+
                 var apigClient = apigClientFactory.newClient({
                     apiKey: "MAqnmMmbc08k8HzzuFXQO85q8jA0bA1i3c3vYkJe"
                 });
-                var body = binBlob;
-                console.log(binBlob)
                 var params = {
-                    'folder': 'nyu-cloud-proj3',
-                    'item': 'testFromJS.jpg',
-                    'Content-Type': 'image/jpg'
+                    'folder': bucket,
+                    'item': objectKey,
+                    'Content-Type': fileType,
                 };
                 var additionalParams = {
                     headers: {},
@@ -131,7 +107,7 @@
             }, false);
 
             if (file) {
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(file); // read as base64 string
             }
         }
     </script>
