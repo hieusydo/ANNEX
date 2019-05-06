@@ -32,21 +32,18 @@
         <div class="row">
             <div class="col-sm-6">
                 <h3>Search your photos</h3>
-                <form method="GET" onsubmit="searchPhotos()" action="#">
+                <form method="GET" onsubmit="searchPhotos()" action="">
                     <div class="form-group">
                         <input type="text" class="form-control" id="searchQuery" placeholder="Type your query">
                     </div>
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <!-- <button type="submit" class="btn btn-primary">Search</button> -->
                 </form>
             </div>
         </div>
     </div>
 
     <!-- Calculate the number of photos to be display and distribute them evenly among 4 columns -->
-    <div class="row">
-        <div class="column">
-        </div>
-    </div>
+    <div class="row" id="annexGallery"></div>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -68,7 +65,15 @@
 
     <script>
         function searchPhotos() {
-            userQuery = document.getElementById('searchQuery').value;
+            userQuery = document.getElementById("searchQuery").value;
+
+            // Clear old photos and query
+            document.getElementById("searchQuery").value = "";
+            var galleryNode = document.getElementById("annexGallery");
+            while (galleryNode.firstChild) {
+                galleryNode.removeChild(galleryNode.firstChild);
+            }
+
             if (!userQuery) {throw "Invalid input query"}
             console.log(userQuery)
             var apigClient = apigClientFactory.newClient({
@@ -83,11 +88,22 @@
                 queryParams: {}
             };
             apigClient.searchGet(params, body, additionalParams)
-            .then(function(result) {
-                console.log("Get success")
-                console.log(result);
+            .then(function(response) {
+                photoRes = response["data"]["results"];
+                if (!photoRes) {throw "Invalid query result"}
+                console.log(photoRes)
+                for (i = 0; i < photoRes.length; i += 4) {
+                    aColumn = `<div class="column" id="col` + i + `">`;
+                    for (j = i; j < i+4 && j < photoRes.length; j++) {
+                        aColumn += (`<img alt="" src="` + photoRes[j]['url'] + `">`)
+                    }
+                    aColumn += `</div>`;
+                    // Ignore empty columns
+                    if (aColumn != `<div class="column"></div>`) {
+                        $("#annexGallery").append(aColumn);
+                    }
+                }
             }).catch( function(err) {
-                console.log("Error")
                 console.log(err);
             });
         }
