@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="style/main.css">
+
+    <title>ANNEX</title>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">ANNEX</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavOptions" aria-controls="navbarNavOptions" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNavOptions">
+            <div class="navbar-nav">
+                <a class="nav-item nav-link" href="index.html">Search</a>
+                <a class="nav-item nav-link active" href="#">Upload</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>Upload your photos</h3>
+                <div class="input-group mb-3">
+                    <div class="custom-file">
+                        <form action="" method="put">
+                            <input type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" onchange="upload()">
+                            <label class="custom-file-label" for="inputGroupFile01">Choose file</label>
+                            <!-- <button>Upload</button> -->
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apigClient.js"></script>
+
+    <script>
+        function b64toBlob(b64Data, contentType, sliceSize) {
+                contentType = contentType || '';
+                sliceSize = sliceSize || 512;
+
+                var byteCharacters = atob(b64Data);
+                var byteArrays = [];
+
+                for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                    var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+                    var byteNumbers = new Array(slice.length);
+                    for (var i = 0; i < slice.length; i++) {
+                        byteNumbers[i] = slice.charCodeAt(i);
+                    }
+
+                    var byteArray = new Uint8Array(byteNumbers);
+
+                    byteArrays.push(byteArray);
+                }
+
+            var blob = new Blob(byteArrays, {type: contentType});
+            return blob;
+        }
+
+        function upload() {
+            // Read the image to a binary blob
+            var file    = document.querySelector('input[type=file]').files[0];
+            console.log(file);
+
+            var reader  = new FileReader();
+            reader.addEventListener("load", function () {
+                var ImageURL = reader.result;
+                // Split the base64 string in data and contentType
+                var block = ImageURL.split(";");
+                // Get the content type of the image
+                var contentType = block[0].split(":")[1];// In this case "image/gif"
+                // get the real base64 content of the file
+                var realData = block[1].split(",")[1];
+                console.log(realData);
+                // binBlob = b64toBlob(realData, contentType);
+
+                binBlob = reader.result;
+                var apigClient = apigClientFactory.newClient({
+                    apiKey: "MAqnmMmbc08k8HzzuFXQO85q8jA0bA1i3c3vYkJe"
+                });
+                var body = binBlob;
+                console.log(binBlob)
+                var params = {
+                    'folder': 'nyu-cloud-proj3',
+                    'item': 'testFromJS.jpg',
+                    'Content-Type': 'image/jpg'
+                };
+                var additionalParams = {
+                    headers: {},
+                    queryParams: {}
+                };
+                apigClient.uploadFolderItemPut(params, body, additionalParams)
+                .then(function(result) {
+                    console.log("Uploaded")
+                    console.log(result);
+                }).catch( function(err) {
+                    console.log("Error")
+                    console.log(err);
+                });
+            }, false);
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
